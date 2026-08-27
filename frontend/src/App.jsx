@@ -307,7 +307,7 @@ function App() {
 
             <div className="pointer-events-none absolute -bottom-32 left-[35%] h-72 w-72 rounded-full bg-blue-500/[0.06] blur-[100px]" />
 
-            <div className="relative flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
+           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
 
               {/* LEFT */}
 
@@ -342,7 +342,7 @@ function App() {
 
               {/* RIGHT */}
 
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:flex lg:flex-col xl:flex-row">
 
                 {/* USER */}
 
@@ -397,11 +397,12 @@ function App() {
                 {/* REFRESH */}
 
                 <button
-                  onClick={fetchTasks}
-                  disabled={loading}
-                  className="group flex items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-4 text-sm font-bold text-slate-300 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-cyan-400/[0.08] hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-
+  type="button"
+  onClick={fetchTasks}
+  disabled={loading}
+  aria-label="Refresh tasks"
+  className="group flex items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-4 text-sm font-bold text-slate-300 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-cyan-400/[0.08] hover:text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-[#050A12] disabled:cursor-not-allowed disabled:opacity-50"
+>
                   <RefreshCw
                     size={17}
                     className={
@@ -417,10 +418,12 @@ function App() {
 
                 {/* LOGOUT */}
 
-                <button
-                  onClick={logout}
-                  className="rounded-2xl border border-red-400/20 bg-red-500/[0.06] px-5 py-4 text-sm font-bold text-red-300 transition-all duration-300 hover:-translate-y-1 hover:border-red-400/40 hover:bg-red-500/[0.12]"
-                >
+               <button
+  type="button"
+  onClick={logout}
+  aria-label="Log out of TaskFlow"
+  className="rounded-2xl border border-red-400/20 bg-red-500/[0.06] px-5 py-4 text-sm font-bold text-red-300 transition-all duration-300 hover:-translate-y-1 hover:border-red-400/40 hover:bg-red-500/[0.12] focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-[#050A12]"
+>
                   Logout
                 </button>
 
