@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "./api/axios";
 
-import Login from "./components/Login";
-import Register from "./components/Register";
-
 import { useAuth } from "./context/AuthContext";
 
 import {
@@ -25,18 +22,10 @@ import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 
 function App() {
-  const { isAuthenticated, user, logout } = useAuth();
-
-  // =====================================================
-  // AUTH UI STATE
-  // =====================================================
-
-  const [showRegister, setShowRegister] = useState(false);
+  const { user, logout } = useAuth();
 
   // =====================================================
   // TASK STATES
-  // IMPORTANT:
-  // All hooks must be declared BEFORE any conditional return
   // =====================================================
 
   const [tasks, setTasks] = useState([]);
@@ -71,19 +60,12 @@ function App() {
   };
 
   // =====================================================
-  // FETCH WHEN USER IS AUTHENTICATED
+  // FETCH WHEN APP LOADS
   // =====================================================
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchTasks();
-    } else {
-      setTasks([]);
-      setEditingTask(null);
-      setError("");
-      setLoading(false);
-    }
-  }, [isAuthenticated]);
+    fetchTasks();
+  }, []);
 
   // =====================================================
   // CREATE TASK
@@ -243,32 +225,6 @@ function App() {
       : 0;
 
   // =====================================================
-  // AUTH SCREEN
-  // IMPORTANT:
-  // This comes AFTER all hooks
-  // =====================================================
-
-  if (!isAuthenticated) {
-    if (showRegister) {
-      return (
-        <Register
-          onSwitchToLogin={() =>
-            setShowRegister(false)
-          }
-        />
-      );
-    }
-
-    return (
-      <Login
-        onSwitchToRegister={() =>
-          setShowRegister(true)
-        }
-      />
-    );
-  }
-
-  // =====================================================
   // MAIN UI
   // =====================================================
 
@@ -320,22 +276,30 @@ function App() {
                   </div>
 
                   <span className="flex items-center gap-1.5 rounded-full border border-cyan-400/20 bg-cyan-400/[0.08] px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-cyan-300">
+
                     <Sparkles size={13} />
+
                     Productivity Workspace
+
                   </span>
 
                 </div>
 
                 <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
+
                   Task
+
                   <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-teal-300 bg-clip-text text-transparent">
                     Flow
                   </span>
+
                 </h1>
 
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">
+
                   Organize your work, focus on what matters,
                   and turn your daily tasks into real progress.
+
                 </p>
 
               </div>
@@ -351,9 +315,11 @@ function App() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
 
                     <span className="text-lg font-bold">
+
                       {user?.name
                         ?.charAt(0)
                         ?.toUpperCase() || "U"}
+
                     </span>
 
                   </div>
@@ -457,17 +423,22 @@ function App() {
                   </p>
 
                   <p className="mt-2 flex items-center gap-1 text-xs text-slate-500">
+
                     <TrendingUp
                       size={13}
                       className="text-cyan-400"
                     />
+
                     Your workload
+
                   </p>
 
                 </div>
 
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-400/10 text-cyan-300 transition-transform duration-300 group-hover:scale-110">
+
                   <ClipboardList size={25} />
+
                 </div>
 
               </div>
@@ -499,7 +470,9 @@ function App() {
                 </div>
 
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-400/10 text-teal-300 transition-transform duration-300 group-hover:scale-110">
+
                   <CheckCircle2 size={25} />
+
                 </div>
 
               </div>
@@ -531,7 +504,9 @@ function App() {
                 </div>
 
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-400/10 text-orange-300 transition-transform duration-300 group-hover:scale-110">
+
                   <Clock3 size={25} />
+
                 </div>
 
               </div>
@@ -570,7 +545,9 @@ function App() {
                 </div>
 
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-400/10 text-blue-300 transition-transform duration-300 group-hover:scale-110">
+
                   <Zap size={25} />
+
                 </div>
 
               </div>
@@ -617,11 +594,15 @@ function App() {
                 </div>
 
                 <p className="mt-2 text-sm text-slate-500">
+
                   {filteredTasks.length}{" "}
+
                   {filteredTasks.length === 1
                     ? "task"
                     : "tasks"}{" "}
+
                   currently displayed
+
                 </p>
 
               </div>
@@ -708,7 +689,9 @@ function App() {
               <div className="mb-6 flex items-start gap-3 rounded-2xl border border-red-400/20 bg-red-500/[0.08] p-4 text-red-300">
 
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10">
+
                   <AlertCircle size={19} />
+
                 </div>
 
                 <div>
