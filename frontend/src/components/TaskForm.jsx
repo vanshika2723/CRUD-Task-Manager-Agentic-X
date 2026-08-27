@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-
 import {
   Plus,
   Pencil,
@@ -12,9 +10,7 @@ import {
   WandSparkles,
 } from "lucide-react";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api/tasks";
+import api from "../api/axios";
 
 function TaskForm({
   editingTask,
@@ -32,7 +28,7 @@ function TaskForm({
 
   useEffect(() => {
     if (editingTask) {
-      setTitle(editingTask.title);
+      setTitle(editingTask.title || "");
       setDescription(editingTask.description || "");
     } else {
       setTitle("");
@@ -55,11 +51,13 @@ function TaskForm({
     try {
       setLoading(true);
 
-      if (editingTask) {
-        // UPDATE
+      // =================================================
+      // UPDATE
+      // =================================================
 
-        const response = await axios.put(
-          `${API_URL}/${editingTask._id}`,
+      if (editingTask) {
+        const response = await api.put(
+          `/tasks/${editingTask._id}`,
           {
             title: title.trim(),
             description: description.trim(),
@@ -68,10 +66,14 @@ function TaskForm({
         );
 
         onTaskUpdated(response.data.task);
-      } else {
-        // CREATE
+      }
 
-        const response = await axios.post(API_URL, {
+      // =================================================
+      // CREATE
+      // =================================================
+
+      else {
+        const response = await api.post("/tasks", {
           title: title.trim(),
           description: description.trim(),
         });
@@ -79,6 +81,7 @@ function TaskForm({
         onTaskCreated(response.data.task);
       }
 
+      // Clear form
       setTitle("");
       setDescription("");
     } catch (error) {
@@ -86,6 +89,13 @@ function TaskForm({
         "Task operation failed:",
         error
       );
+
+      if (error.response?.status === 401) {
+        alert(
+          "Your session has expired. Please login again."
+        );
+        return;
+      }
 
       alert(
         error.response?.data?.message ||
@@ -120,7 +130,6 @@ function TaskForm({
       {/* ================================================= */}
 
       <div className="relative mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-
         <div className="flex items-center gap-5">
 
           {/* ICON */}
@@ -142,9 +151,7 @@ function TaskForm({
           {/* TITLE */}
 
           <div>
-
             <div className="mb-2 flex flex-wrap items-center gap-3">
-
               <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
                 {editingTask
                   ? "Edit Task"
@@ -157,7 +164,6 @@ function TaskForm({
                   New Task
                 </span>
               )}
-
             </div>
 
             <p className="text-sm text-slate-500 sm:text-base">
@@ -165,9 +171,7 @@ function TaskForm({
                 ? "Update your task details and keep moving forward."
                 : "Turn your ideas into actionable tasks and stay productive."}
             </p>
-
           </div>
-
         </div>
 
         {/* ================================================= */}
@@ -188,7 +192,6 @@ function TaskForm({
             Cancel
           </button>
         )}
-
       </div>
 
       {/* ================================================= */}
@@ -202,7 +205,6 @@ function TaskForm({
         {/* ================================================= */}
 
         <div>
-
           <label
             htmlFor="task-title"
             className="mb-2.5 flex items-center gap-2 text-sm font-bold text-slate-300"
@@ -220,7 +222,6 @@ function TaskForm({
           </label>
 
           <div className="group relative">
-
             <input
               id="task-title"
               type="text"
@@ -233,12 +234,8 @@ function TaskForm({
               className="w-full rounded-2xl border border-white/10 bg-[#050A14] px-5 py-4 text-sm font-medium text-white placeholder:text-slate-700 outline-none transition-all duration-300 hover:border-blue-400/20 focus:border-blue-400/50 focus:bg-[#07101D] focus:ring-4 focus:ring-blue-500/10"
             />
 
-            {/* Focus Line */}
-
             <div className="pointer-events-none absolute inset-x-4 bottom-0 h-px origin-center scale-x-0 bg-gradient-to-r from-blue-500 via-cyan-400 to-teal-400 transition-transform duration-300 group-focus-within:scale-x-100" />
-
           </div>
-
         </div>
 
         {/* ================================================= */}
@@ -246,7 +243,6 @@ function TaskForm({
         {/* ================================================= */}
 
         <div>
-
           <label
             htmlFor="task-description"
             className="mb-2.5 flex items-center gap-2 text-sm font-bold text-slate-300"
@@ -264,7 +260,6 @@ function TaskForm({
           </label>
 
           <div className="group relative">
-
             <textarea
               id="task-description"
               value={description}
@@ -276,12 +271,8 @@ function TaskForm({
               className="w-full resize-none rounded-2xl border border-white/10 bg-[#050A14] px-5 py-4 text-sm leading-7 text-white placeholder:text-slate-700 outline-none transition-all duration-300 hover:border-teal-400/20 focus:border-teal-400/50 focus:bg-[#07101D] focus:ring-4 focus:ring-teal-500/10"
             />
 
-            {/* Focus Line */}
-
             <div className="pointer-events-none absolute inset-x-4 bottom-0 h-px origin-center scale-x-0 bg-gradient-to-r from-teal-500 via-cyan-400 to-blue-400 transition-transform duration-300 group-focus-within:scale-x-100" />
-
           </div>
-
         </div>
 
         {/* ================================================= */}
@@ -297,15 +288,9 @@ function TaskForm({
               : "bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 shadow-blue-500/10 hover:-translate-y-1 hover:shadow-blue-500/25 focus:ring-4 focus:ring-blue-500/20"
           }`}
         >
-
-          {/* Shine Effect */}
-
           <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
 
-          {/* Button Content */}
-
           <span className="relative flex items-center gap-2.5">
-
             {loading ? (
               <>
                 <Loader2
@@ -339,11 +324,8 @@ function TaskForm({
                 />
               </>
             )}
-
           </span>
-
         </button>
-
       </div>
 
       {/* ================================================= */}
@@ -351,7 +333,6 @@ function TaskForm({
       {/* ================================================= */}
 
       <div className="relative mt-5 flex flex-wrap items-center justify-center gap-2 text-center text-[11px] text-slate-600">
-
         <span className="h-1.5 w-1.5 rounded-full bg-teal-400 shadow-sm shadow-teal-400/50" />
 
         Your task will be saved securely
@@ -363,9 +344,7 @@ function TaskForm({
         <span>
           Stay focused. Get things done.
         </span>
-
       </div>
-
     </form>
   );
 }

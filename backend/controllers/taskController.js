@@ -1,19 +1,39 @@
 const Task = require("../models/Task");
 
-// Create Task
+// GET ALL USER TASKS
+const getTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find({
+      user: req.userId,
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      tasks,
+    });
+  } catch (error) {
+    console.error("Get tasks error:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch tasks",
+    });
+  }
+};
+
+// CREATE TASK
 const createTask = async (req, res) => {
   try {
     const { title, description } = req.body;
 
     if (!title || !title.trim()) {
       return res.status(400).json({
-        message: "Title is required",
+        message: "Task title is required",
       });
     }
 
     const task = await Task.create({
       title: title.trim(),
       description: description?.trim() || "",
+      user: req.userId,
     });
 
     res.status(201).json({
@@ -21,45 +41,23 @@ const createTask = async (req, res) => {
       task,
     });
   } catch (error) {
+    console.error("Create task error:", error);
+
     res.status(500).json({
       message: "Failed to create task",
-      error: error.message,
     });
   }
 };
-// Get All Tasks
-const getTasks = async (req, res) => {
-  try {
-    const tasks = await Task.find().sort({ createdAt: -1 });
 
-    res.status(200).json({
-      tasks,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch tasks",
-      error: error.message,
-    });
-  }
-};
-// Update Task
+// UPDATE TASK
 const updateTask = async (req, res) => {
   try {
-    const { id } = req.params;
     const { title, description, completed } = req.body;
 
-    const task = await Task.findByIdAndUpdate(
-      id,
-      {
-        title,
-        description,
-        completed,
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const task = await Task.findOne({
+      _id: req.params.id,
+      user: req.userId,
+    });
 
     if (!task) {
       return res.status(404).json({
@@ -67,23 +65,46 @@ const updateTask = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    if (title !== undefined) {
+      if (!title.trim()) {
+        return res.status(400).json({
+          message: "Task title cannot be empty",
+        });
+      }
+
+      task.title = title.trim();
+    }
+
+    if (description !== undefined) {
+      task.description = description.trim();
+    }
+
+    if (completed !== undefined) {
+      task.completed = completed;
+    }
+
+    await task.save();
+
+    res.json({
       message: "Task updated successfully",
       task,
     });
   } catch (error) {
+    console.error("Update task error:", error);
+
     res.status(500).json({
       message: "Failed to update task",
-      error: error.message,
     });
   }
 };
-// Delete Task
+
+// DELETE TASK
 const deleteTask = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const task = await Task.findByIdAndDelete(id);
+    const task = await Task.findOneAndDelete({
+      _id: req.params.id,
+      user: req.userId,
+    });
 
     if (!task) {
       return res.status(404).json({
@@ -91,19 +112,21 @@ const deleteTask = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    res.json({
       message: "Task deleted successfully",
     });
   } catch (error) {
+    console.error("Delete task error:", error);
+
     res.status(500).json({
       message: "Failed to delete task",
-      error: error.message,
     });
   }
 };
+
 module.exports = {
-  createTask,
   getTasks,
+  createTask,
   updateTask,
   deleteTask,
 };

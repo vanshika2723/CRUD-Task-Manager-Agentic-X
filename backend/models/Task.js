@@ -10,13 +10,20 @@ const taskSchema = new mongoose.Schema(
 
     description: {
       type: String,
-      default: "",
       trim: true,
+      default: "",
     },
 
     completed: {
       type: Boolean,
       default: false,
+    },
+
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
     },
   },
   {
@@ -24,6 +31,4 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
-const Task = mongoose.model("Task", taskSchema);
-
-module.exports = Task;
+module.exports = mongoose.model("Task", taskSchema);

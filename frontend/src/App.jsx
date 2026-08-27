@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "./api/axios";
+
+import Login from "./components/Login";
+import Register from "./components/Register";
+
+import { useAuth } from "./context/AuthContext";
 
 import {
   ClipboardList,
@@ -19,9 +24,37 @@ import {
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 
-const API_URL = import.meta.env.VITE_API_URL;
+// const API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
+  const { isAuthenticated, user, logout } = useAuth();
+
+  const [showRegister, setShowRegister] = useState(false);
+
+  // =====================================================
+  // AUTH
+  // =====================================================
+
+  if (!isAuthenticated) {
+    if (showRegister) {
+      return (
+        <Register
+          onSwitchToLogin={() => setShowRegister(false)}
+        />
+      );
+    }
+
+    return (
+      <Login
+        onSwitchToRegister={() => setShowRegister(true)}
+      />
+    );
+  }
+
+  // =====================================================
+  // STATES
+  // =====================================================
+
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingTask, setEditingTask] = useState(null);
@@ -38,7 +71,7 @@ function App() {
       setLoading(true);
       setError("");
 
-      const response = await axios.get(API_URL);
+    const response = await api.get("/tasks");
 
       setTasks(response.data.tasks || []);
     } catch (error) {
@@ -103,14 +136,14 @@ function App() {
 
   const handleToggleComplete = async (task) => {
     try {
-      const response = await axios.put(
-        `${API_URL}/${task._id}`,
-        {
-          title: task.title,
-          description: task.description,
-          completed: !task.completed,
-        }
-      );
+     const response = await api.put(
+  `/tasks/${task._id}`,
+  {
+    title: task.title,
+    description: task.description,
+    completed: !task.completed,
+  }
+);
 
       handleTaskUpdated(response.data.task);
     } catch (error) {
@@ -148,7 +181,7 @@ function App() {
     }
 
     try {
-      await axios.delete(`${API_URL}/${taskId}`);
+      await api.delete(`/tasks/${taskId}`);
 
       setTasks((previousTasks) =>
         previousTasks.filter(
@@ -212,6 +245,10 @@ function App() {
         )
       : 0;
 
+  // =====================================================
+  // UI
+  // =====================================================
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#050A12] text-white">
 
@@ -230,7 +267,7 @@ function App() {
       </div>
 
       {/* ================================================= */}
-      {/* MAIN CONTAINER - FULL SCREEN */}
+      {/* MAIN CONTAINER */}
       {/* ================================================= */}
 
       <main className="relative w-full px-4 py-5 sm:px-6 sm:py-7 lg:px-8 xl:px-10">
@@ -251,7 +288,9 @@ function App() {
 
             <div className="relative flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
 
+              {/* ================================================= */}
               {/* LEFT */}
+              {/* ================================================= */}
 
               <div>
 
@@ -282,9 +321,36 @@ function App() {
 
               </div>
 
-              {/* RIGHT */}
+              {/* ================================================= */}
+              {/* RIGHT - USER + COMPLETION + REFRESH + LOGOUT */}
+              {/* ================================================= */}
 
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
+
+                {/* USER INFO */}
+
+                <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-5 py-4 backdrop-blur-xl">
+
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
+                    <span className="text-lg font-bold">
+                      {user?.name?.charAt(0)?.toUpperCase() ||
+                        "U"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+                      Welcome
+                    </p>
+
+                    <p className="text-sm font-bold text-white">
+                      {user?.name || "User"}
+                    </p>
+                  </div>
+
+                </div>
+
+                {/* COMPLETION */}
 
                 <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-5 py-4 backdrop-blur-xl">
 
@@ -304,6 +370,8 @@ function App() {
 
                 </div>
 
+                {/* REFRESH */}
+
                 <button
                   onClick={fetchTasks}
                   disabled={loading}
@@ -319,6 +387,15 @@ function App() {
                   />
 
                   Refresh
+                </button>
+
+                {/* LOGOUT */}
+
+                <button
+                  onClick={logout}
+                  className="rounded-2xl border border-red-400/20 bg-red-500/[0.06] px-5 py-4 text-sm font-bold text-red-300 transition-all duration-300 hover:-translate-y-1 hover:border-red-400/40 hover:bg-red-500/[0.12]"
+                >
+                  Logout
                 </button>
 
               </div>
@@ -346,6 +423,7 @@ function App() {
               <div className="relative flex items-center justify-between">
 
                 <div>
+
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
                     Total Tasks
                   </p>
@@ -361,6 +439,7 @@ function App() {
                     />
                     Your workload
                   </p>
+
                 </div>
 
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-400/10 text-cyan-300 transition-transform duration-300 group-hover:scale-110">
@@ -368,6 +447,7 @@ function App() {
                 </div>
 
               </div>
+
             </div>
 
             {/* COMPLETED */}
@@ -379,6 +459,7 @@ function App() {
               <div className="relative flex items-center justify-between">
 
                 <div>
+
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
                     Completed
                   </p>
@@ -390,6 +471,7 @@ function App() {
                   <p className="mt-2 text-xs text-slate-500">
                     Successfully finished
                   </p>
+
                 </div>
 
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-400/10 text-teal-300 transition-transform duration-300 group-hover:scale-110">
@@ -397,6 +479,7 @@ function App() {
                 </div>
 
               </div>
+
             </div>
 
             {/* PENDING */}
@@ -408,6 +491,7 @@ function App() {
               <div className="relative flex items-center justify-between">
 
                 <div>
+
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
                     Pending
                   </p>
@@ -419,6 +503,7 @@ function App() {
                   <p className="mt-2 text-xs text-slate-500">
                     Waiting for action
                   </p>
+
                 </div>
 
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-400/10 text-orange-300 transition-transform duration-300 group-hover:scale-110">
@@ -426,6 +511,7 @@ function App() {
                 </div>
 
               </div>
+
             </div>
 
             {/* PROGRESS */}
@@ -437,6 +523,7 @@ function App() {
               <div className="relative flex items-center justify-between">
 
                 <div>
+
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
                     Progress
                   </p>
@@ -446,13 +533,16 @@ function App() {
                   </p>
 
                   <div className="mt-3 h-1.5 w-28 overflow-hidden rounded-full bg-white/[0.06]">
+
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-700"
                       style={{
                         width: `${completionPercentage}%`,
                       }}
                     />
+
                   </div>
+
                 </div>
 
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-400/10 text-blue-300 transition-transform duration-300 group-hover:scale-110">
@@ -460,6 +550,7 @@ function App() {
                 </div>
 
               </div>
+
             </div>
 
           </section>
@@ -568,6 +659,7 @@ function App() {
                     aria-label="Filter tasks"
                     className="w-full appearance-none rounded-2xl border border-white/[0.08] bg-[#050A12] py-3.5 pl-10 pr-10 text-sm font-medium text-white outline-none transition-all duration-300 hover:border-white/[0.12] focus:border-cyan-400/40 focus:ring-4 focus:ring-cyan-400/[0.08]"
                   >
+
                     <option value="all">
                       All Tasks
                     </option>
@@ -579,6 +671,7 @@ function App() {
                     <option value="completed">
                       Completed
                     </option>
+
                   </select>
 
                 </div>
@@ -664,7 +757,9 @@ function App() {
           </footer>
 
         </div>
+
       </main>
+
     </div>
   );
 }
