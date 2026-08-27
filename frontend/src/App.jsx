@@ -24,35 +24,19 @@ import {
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 
-// const API_URL = import.meta.env.VITE_API_URL;
-
 function App() {
   const { isAuthenticated, user, logout } = useAuth();
+
+  // =====================================================
+  // AUTH UI STATE
+  // =====================================================
 
   const [showRegister, setShowRegister] = useState(false);
 
   // =====================================================
-  // AUTH
-  // =====================================================
-
-  if (!isAuthenticated) {
-    if (showRegister) {
-      return (
-        <Register
-          onSwitchToLogin={() => setShowRegister(false)}
-        />
-      );
-    }
-
-    return (
-      <Login
-        onSwitchToRegister={() => setShowRegister(true)}
-      />
-    );
-  }
-
-  // =====================================================
-  // STATES
+  // TASK STATES
+  // IMPORTANT:
+  // All hooks must be declared BEFORE any conditional return
   // =====================================================
 
   const [tasks, setTasks] = useState([]);
@@ -71,7 +55,7 @@ function App() {
       setLoading(true);
       setError("");
 
-    const response = await api.get("/tasks");
+      const response = await api.get("/tasks");
 
       setTasks(response.data.tasks || []);
     } catch (error) {
@@ -86,12 +70,23 @@ function App() {
     }
   };
 
+  // =====================================================
+  // FETCH WHEN USER IS AUTHENTICATED
+  // =====================================================
+
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    if (isAuthenticated) {
+      fetchTasks();
+    } else {
+      setTasks([]);
+      setEditingTask(null);
+      setError("");
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
 
   // =====================================================
-  // CREATE
+  // CREATE TASK
   // =====================================================
 
   const handleTaskCreated = (newTask) => {
@@ -102,7 +97,7 @@ function App() {
   };
 
   // =====================================================
-  // EDIT
+  // EDIT TASK
   // =====================================================
 
   const handleEdit = (task) => {
@@ -115,7 +110,7 @@ function App() {
   };
 
   // =====================================================
-  // UPDATE
+  // UPDATE TASK
   // =====================================================
 
   const handleTaskUpdated = (updatedTask) => {
@@ -136,14 +131,14 @@ function App() {
 
   const handleToggleComplete = async (task) => {
     try {
-     const response = await api.put(
-  `/tasks/${task._id}`,
-  {
-    title: task.title,
-    description: task.description,
-    completed: !task.completed,
-  }
-);
+      const response = await api.put(
+        `/tasks/${task._id}`,
+        {
+          title: task.title,
+          description: task.description,
+          completed: !task.completed,
+        }
+      );
 
       handleTaskUpdated(response.data.task);
     } catch (error) {
@@ -168,7 +163,7 @@ function App() {
   };
 
   // =====================================================
-  // DELETE
+  // DELETE TASK
   // =====================================================
 
   const handleDelete = async (taskId) => {
@@ -206,7 +201,9 @@ function App() {
   // =====================================================
 
   const filteredTasks = tasks.filter((task) => {
-    const searchText = search.toLowerCase().trim();
+    const searchText = search
+      .toLowerCase()
+      .trim();
 
     const title =
       task.title?.toLowerCase() || "";
@@ -246,7 +243,33 @@ function App() {
       : 0;
 
   // =====================================================
-  // UI
+  // AUTH SCREEN
+  // IMPORTANT:
+  // This comes AFTER all hooks
+  // =====================================================
+
+  if (!isAuthenticated) {
+    if (showRegister) {
+      return (
+        <Register
+          onSwitchToLogin={() =>
+            setShowRegister(false)
+          }
+        />
+      );
+    }
+
+    return (
+      <Login
+        onSwitchToRegister={() =>
+          setShowRegister(true)
+        }
+      />
+    );
+  }
+
+  // =====================================================
+  // MAIN UI
   // =====================================================
 
   return (
@@ -280,17 +303,13 @@ function App() {
 
           <header className="relative mb-7 overflow-hidden rounded-[30px] border border-white/[0.08] bg-gradient-to-br from-[#0B1626] via-[#09131F] to-[#071019] p-6 shadow-2xl shadow-black/30 sm:p-8 lg:p-10">
 
-            {/* Header Glow */}
-
             <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-cyan-400/[0.08] blur-[100px]" />
 
             <div className="pointer-events-none absolute -bottom-32 left-[35%] h-72 w-72 rounded-full bg-blue-500/[0.06] blur-[100px]" />
 
             <div className="relative flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
 
-              {/* ================================================= */}
               {/* LEFT */}
-              {/* ================================================= */}
 
               <div>
 
@@ -321,24 +340,26 @@ function App() {
 
               </div>
 
-              {/* ================================================= */}
-              {/* RIGHT - USER + COMPLETION + REFRESH + LOGOUT */}
-              {/* ================================================= */}
+              {/* RIGHT */}
 
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
 
-                {/* USER INFO */}
+                {/* USER */}
 
                 <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-5 py-4 backdrop-blur-xl">
 
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
+
                     <span className="text-lg font-bold">
-                      {user?.name?.charAt(0)?.toUpperCase() ||
-                        "U"}
+                      {user?.name
+                        ?.charAt(0)
+                        ?.toUpperCase() || "U"}
                     </span>
+
                   </div>
 
                   <div>
+
                     <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
                       Welcome
                     </p>
@@ -346,6 +367,7 @@ function App() {
                     <p className="text-sm font-bold text-white">
                       {user?.name || "User"}
                     </p>
+
                   </div>
 
                 </div>
@@ -359,6 +381,7 @@ function App() {
                   </div>
 
                   <div>
+
                     <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
                       Completion
                     </p>
@@ -366,6 +389,7 @@ function App() {
                     <p className="text-lg font-bold text-white">
                       {completionPercentage}%
                     </p>
+
                   </div>
 
                 </div>
@@ -377,6 +401,7 @@ function App() {
                   disabled={loading}
                   className="group flex items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-4 text-sm font-bold text-slate-300 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-cyan-400/[0.08] hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
                 >
+
                   <RefreshCw
                     size={17}
                     className={
@@ -387,6 +412,7 @@ function App() {
                   />
 
                   Refresh
+
                 </button>
 
                 {/* LOGOUT */}
@@ -401,8 +427,6 @@ function App() {
               </div>
 
             </div>
-
-            {/* Header Bottom Line */}
 
             <div className="absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r from-cyan-400 via-blue-500 to-teal-400 opacity-50" />
 
@@ -556,7 +580,7 @@ function App() {
           </section>
 
           {/* ================================================= */}
-          {/* CREATE TASK */}
+          {/* CREATE / EDIT TASK */}
           {/* ================================================= */}
 
           <section className="mb-8">
@@ -571,7 +595,7 @@ function App() {
           </section>
 
           {/* ================================================= */}
-          {/* TASKS HEADER */}
+          {/* TASKS */}
           {/* ================================================= */}
 
           <section>
@@ -612,9 +636,7 @@ function App() {
 
             </div>
 
-            {/* ================================================= */}
             {/* SEARCH + FILTER */}
-            {/* ================================================= */}
 
             <div className="mb-6 rounded-[24px] border border-white/[0.08] bg-[#0A1420] p-4 shadow-xl sm:p-5">
 
@@ -680,9 +702,7 @@ function App() {
 
             </div>
 
-            {/* ================================================= */}
             {/* ERROR */}
-            {/* ================================================= */}
 
             {error && (
               <div className="mb-6 flex items-start gap-3 rounded-2xl border border-red-400/20 bg-red-500/[0.08] p-4 text-red-300">
@@ -706,9 +726,7 @@ function App() {
               </div>
             )}
 
-            {/* ================================================= */}
             {/* TASK LIST */}
-            {/* ================================================= */}
 
             <TaskList
               tasks={filteredTasks}

@@ -4,11 +4,10 @@ import {
   useState,
 } from "react";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Authentication API URL
 const AUTH_URL = `${API_URL}/auth`;
 
 export function AuthProvider({ children }) {
@@ -28,7 +27,9 @@ export function AuthProvider({ children }) {
     const savedUser = localStorage.getItem("user");
 
     try {
-      return savedUser ? JSON.parse(savedUser) : null;
+      return savedUser
+        ? JSON.parse(savedUser)
+        : null;
     } catch {
       return null;
     }
@@ -48,20 +49,22 @@ export function AuthProvider({ children }) {
     setLoading(true);
 
     try {
-      const response = await fetch(`${AUTH_URL}/login`, {
-        method: "POST",
+      const response = await fetch(
+        `${AUTH_URL}/login`,
+        {
+          method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+          }),
+        }
+      );
 
-      // Read response safely
       const contentType =
         response.headers.get("content-type") || "";
 
@@ -74,27 +77,29 @@ export function AuthProvider({ children }) {
 
         throw new Error(
           text ||
-            "Backend API is not responding. Please check your API URL and server."
+            "Backend API is not responding."
         );
       }
 
-      // Handle backend errors
       if (!response.ok) {
         throw new Error(
           data.message || "Login failed"
         );
       }
 
-      // Make sure token exists
       if (!data.token) {
         throw new Error(
-          "Login successful, but token was not received from the server."
+          "Login successful, but token was not received."
         );
       }
 
-      // Save authentication data
-      localStorage.setItem("token", data.token);
+      // Save token
+      localStorage.setItem(
+        "token",
+        data.token
+      );
 
+      // Save user
       if (data.user) {
         localStorage.setItem(
           "user",
@@ -102,13 +107,16 @@ export function AuthProvider({ children }) {
         );
       }
 
-      // Update state
+      // Update React state
       setToken(data.token);
       setUser(data.user || null);
 
       return data;
     } catch (error) {
-      console.error("Login Error:", error);
+      console.error(
+        "Login Error:",
+        error
+      );
 
       throw new Error(
         error.message || "Unable to login"
@@ -140,14 +148,13 @@ export function AuthProvider({ children }) {
           },
 
           body: JSON.stringify({
-            name,
-            email,
+            name: name.trim(),
+            email: email.trim(),
             password,
           }),
         }
       );
 
-      // Read response safely
       const contentType =
         response.headers.get("content-type") || "";
 
@@ -160,27 +167,30 @@ export function AuthProvider({ children }) {
 
         throw new Error(
           text ||
-            "Backend API is not responding. Please check your API URL and server."
+            "Backend API is not responding."
         );
       }
 
-      // Handle backend errors
       if (!response.ok) {
         throw new Error(
-          data.message || "Registration failed"
+          data.message ||
+            "Registration failed"
         );
       }
 
-      // Make sure token exists
       if (!data.token) {
         throw new Error(
-          "Registration successful, but token was not received from the server."
+          "Registration successful, but token was not received."
         );
       }
 
-      // Save authentication data
-      localStorage.setItem("token", data.token);
+      // Save token
+      localStorage.setItem(
+        "token",
+        data.token
+      );
 
+      // Save user
       if (data.user) {
         localStorage.setItem(
           "user",
@@ -200,7 +210,8 @@ export function AuthProvider({ children }) {
       );
 
       throw new Error(
-        error.message || "Unable to register"
+        error.message ||
+          "Unable to register"
       );
     } finally {
       setLoading(false);
@@ -227,17 +238,11 @@ export function AuthProvider({ children }) {
     token,
     user,
     loading,
-
     isAuthenticated: Boolean(token),
-
     login,
     register,
     logout,
   };
-
-  // =====================================================
-  // PROVIDER
-  // =====================================================
 
   return (
     <AuthContext.Provider value={value}>
