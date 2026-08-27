@@ -9,11 +9,10 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 function Login({ onSwitchToRegister }) {
   const { login, loading } = useAuth();
-const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -32,25 +31,26 @@ const navigate = useNavigate();
     }
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  setError("");
+    setError("");
 
-  try {
-    await login(
-      formData.email,
-      formData.password
-    );
+    try {
+      await login(
+        formData.email,
+        formData.password
+      );
 
-    navigate("/", { replace: true });
-
-  } catch (error) {
-    setError(
-      error.message || "Login failed"
-    );
-  }
-};
+      // Login successful.
+      // AuthContext updates isAuthenticated,
+      // so App.jsx automatically shows the dashboard.
+    } catch (error) {
+      setError(
+        error.message || "Login failed"
+      );
+    }
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 px-4 py-8 sm:px-6 lg:px-8">

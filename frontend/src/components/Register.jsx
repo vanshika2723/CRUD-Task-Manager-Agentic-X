@@ -10,11 +10,10 @@ import {
   Zap,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 function Register({ onSwitchToLogin }) {
   const { register, loading } = useAuth();
-const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -34,29 +33,26 @@ const navigate = useNavigate();
     }
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  setError("");
+    setError("");
 
-  if (formData.password.length < 8) {
-    setError("Password must be at least 8 characters");
-    return;
-  }
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
 
-  try {
-    await register(
-      formData.name,
-      formData.email,
-      formData.password
-    );
-
-    navigate("/", { replace: true });
-
-  } catch (error) {
-    setError(error.message);
-  }
-};
+    try {
+      await register(
+        formData.name,
+        formData.email,
+        formData.password
+      );
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
   const passwordLength = formData.password.length;
 
